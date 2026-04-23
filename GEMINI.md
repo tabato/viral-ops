@@ -42,7 +42,7 @@ That's it. No billing setup, no quotas to worry about.
 
 ## Model
 
-viral-ops uses `gemini-1.5-flash` — Google's fastest model, optimized for high-volume tasks. It's accurate, quick, and handles the JSON-structured analysis prompts reliably.
+viral-ops uses `gemini-2.0-flash` — Google's latest fast model, optimized for high-volume tasks. It's accurate, quick, and handles the JSON-structured analysis prompts reliably.
 
 ## Troubleshooting
 

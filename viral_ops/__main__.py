@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -8,11 +10,11 @@ import typer
 from rich import box
 from rich.console import Console
 from rich.panel import Panel
+from rich.prompt import IntPrompt
 from rich.table import Table
-from rich.text import Text
 
 from . import __version__
-from .analyzer import ContentAnalyzer, save_swipe_file
+from .analyzer import ContentAnalyzer, AnalysisResult, save_swipe_file
 from .config import load_config
 from .gallery import generate_gallery
 from .scanner import YouTubeScanner, VideoResult
@@ -23,16 +25,85 @@ app = typer.Typer(
     name="viral-ops",
     help="🔥 Viral content intelligence — scan YouTube, score virality, generate AI copy angles.",
     no_args_is_help=False,
+    invoke_without_command=True,
     rich_markup_mode="rich",
     pretty_exceptions_show_locals=False,
 )
 
 PROVIDER_LABELS = {
-    "gemini": "Gemini 1.5 Flash  [dim](FREE — recommended)[/dim]",
+    "gemini": "Gemini 2.0 Flash  [dim](FREE — recommended)[/dim]",
     "claude": "Claude (Anthropic)",
     "openai": "GPT-4o mini (OpenAI)",
 }
 
+OUTLIERS_FILE = Path("outliers.json")
+
+
+# ── Outlier persistence ────────────────────────────────────────────────────
+
+def _video_to_dict(v: VideoResult, rank: int) -> dict:
+    return {
+        "rank": rank,
+        "video_id": v.video_id,
+        "title": v.title,
+        "channel_id": v.channel_id,
+        "channel_name": v.channel_name,
+        "channel_handle": v.channel_handle,
+        "published_at": v.published_at.isoformat(),
+        "view_count": v.view_count,
+        "like_count": v.like_count,
+        "comment_count": v.comment_count,
+        "thumbnail_url": v.thumbnail_url,
+        "description": v.description,
+        "channel_avg_views": v.channel_avg_views,
+        "virality_score": v.virality_score,
+    }
+
+
+def _dict_to_video(d: dict) -> VideoResult:
+    pub = d["published_at"]
+    published_at = datetime.fromisoformat(pub)
+    if published_at.tzinfo is None:
+        published_at = published_at.replace(tzinfo=timezone.utc)
+    return VideoResult(
+        video_id=d["video_id"],
+        title=d["title"],
+        channel_id=d["channel_id"],
+        channel_name=d["channel_name"],
+        channel_handle=d["channel_handle"],
+        published_at=published_at,
+        view_count=d["view_count"],
+        like_count=d["like_count"],
+        comment_count=d["comment_count"],
+        thumbnail_url=d["thumbnail_url"],
+        description=d["description"],
+        channel_avg_views=d["channel_avg_views"],
+        virality_score=d["virality_score"],
+    )
+
+
+def save_outliers(outliers: list[VideoResult], niche: str, path: Path = OUTLIERS_FILE) -> None:
+    ranked = sorted(outliers, key=lambda v: v.virality_score, reverse=True)
+    data = {
+        "generated_at": datetime.now().isoformat(),
+        "niche": niche,
+        "count": len(ranked),
+        "outliers": [_video_to_dict(v, i) for i, v in enumerate(ranked, 1)],
+    }
+    path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+
+
+def load_outliers(path: Path = OUTLIERS_FILE) -> tuple[list[VideoResult], str]:
+    if not path.exists():
+        raise FileNotFoundError(
+            f"No saved outliers found at '{path}'. Run 'viral-ops' first to scan channels."
+        )
+    data = json.loads(path.read_text(encoding="utf-8"))
+    videos = [_dict_to_video(d) for d in data["outliers"]]
+    return videos, data.get("niche", "")
+
+
+# ── Shared UI helpers ──────────────────────────────────────────────────────
 
 def _print_header() -> None:
     console.print()
@@ -60,9 +131,16 @@ def _print_config_summary(config) -> None:
     console.print()
 
 
+def _fmt_views(n: int) -> str:
+    if n >= 1_000_000:
+        return f"{n/1_000_000:.1f}M"
+    if n >= 1_000:
+        return f"{n/1_000:.0f}K"
+    return str(n)
+
+
 def _print_outliers_table(outliers: list[VideoResult], top: int = 10) -> None:
     ranked = sorted(outliers, key=lambda v: v.virality_score, reverse=True)[:top]
-
     table = Table(
         title=f"🔥  Top {len(ranked)} Viral Outliers",
         box=box.ROUNDED,
@@ -76,42 +154,57 @@ def _print_outliers_table(outliers: list[VideoResult], top: int = 10) -> None:
     table.add_column("Score", justify="right", style="bold yellow")
     table.add_column("Views", justify="right", style="green")
 
-    def fmt_views(n: int) -> str:
-        if n >= 1_000_000:
-            return f"{n/1_000_000:.1f}M"
-        if n >= 1_000:
-            return f"{n/1_000:.0f}K"
-        return str(n)
-
     for i, v in enumerate(ranked, 1):
         title_short = v.title[:46] + "…" if len(v.title) > 46 else v.title
         score_txt = f"{v.virality_score:.1f}x {v.flames}".strip()
-        table.add_row(
-            str(i),
-            v.channel_name[:20],
-            title_short,
-            score_txt,
-            fmt_views(v.view_count),
-        )
+        table.add_row(str(i), v.channel_name[:20], title_short, score_txt, _fmt_views(v.view_count))
 
     console.print()
     console.print(table)
     console.print()
 
 
-def _print_final_summary(
-    total_videos: int,
-    channels_scanned: int,
-    outlier_count: int,
-    analyzed_count: int,
-    gallery_path: Path,
-    swipe_path: Path,
+def _run_analysis(
+    videos: list[VideoResult],
+    config,
+    output: Path,
+    no_browser: bool,
 ) -> None:
+    console.rule("[bold]AI Analysis[/bold]")
+    try:
+        analyzer = ContentAnalyzer(config)
+        results = analyzer.analyze_top(videos, limit=len(videos))
+    except EnvironmentError as exc:
+        console.print(f"[bold red]✗  AI config error:[/bold red] {exc}")
+        raise typer.Exit(1)
+    except Exception as exc:
+        console.print(f"[bold red]✗  Analysis failed:[/bold red] {exc}")
+        raise typer.Exit(1)
+
+    if not results:
+        console.print(
+            "[yellow]⚠  No analysis results.[/yellow]\n"
+            "[dim]  Try a different ai_provider in profile.yml (gemini, claude, openai)[/dim]"
+        )
+        raise typer.Exit(1)
+
+    output.mkdir(parents=True, exist_ok=True)
+    swipe_path = output / "swipe_file.md"
+    console.print(f"\n📝  Saving [bold]{swipe_path}[/bold]…")
+    save_swipe_file(results, swipe_path, config.profile.niche)
+
+    console.rule("[bold]Gallery[/bold]")
+    gallery_path = generate_gallery(
+        results,
+        output_dir=output,
+        profile_niche=config.profile.niche,
+        open_browser=not no_browser,
+    )
+
     console.print()
     console.print(Panel.fit(
         f"[bold green]✅  Done![/bold green]\n\n"
-        f"  📺  {channels_scanned} channels  →  {total_videos} videos scanned\n"
-        f"  🔥  {outlier_count} outliers found  →  {analyzed_count} analyzed\n"
+        f"  🔥  {len(results)} videos analyzed\n"
         f"  🖼️   [link=file://{gallery_path.resolve()}]{gallery_path}[/link]\n"
         f"  📝  [link=file://{swipe_path.resolve()}]{swipe_path}[/link]",
         border_style="green",
@@ -120,51 +213,23 @@ def _print_final_summary(
     console.print()
 
 
-# ── CLI command ────────────────────────────────────────────────────────────
+# ── Main command ───────────────────────────────────────────────────────────
 
-@app.command()
+@app.callback(invoke_without_command=True)
 def main(
-    profile: Path = typer.Option(
-        Path("profile.yml"),
-        "--profile",
-        "-p",
-        help="Path to profile.yml",
-        show_default=True,
-    ),
-    creators: Path = typer.Option(
-        Path("creators.yml"),
-        "--creators",
-        "-c",
-        help="Path to creators.yml",
-        show_default=True,
-    ),
-    output: Path = typer.Option(
-        Path("."),
-        "--output",
-        "-o",
-        help="Output directory for gallery.html and swipe_file.md",
-        show_default=True,
-    ),
-    no_browser: bool = typer.Option(
-        False,
-        "--no-browser",
-        help="Don't auto-open gallery.html in the browser",
-    ),
-    top: int = typer.Option(
-        10,
-        "--top",
-        help="Number of top outliers to analyze",
-        min=1,
-        max=25,
-    ),
+    ctx: typer.Context,
+    profile: Path = typer.Option(Path("profile.yml"), "--profile", "-p", show_default=True),
+    creators: Path = typer.Option(Path("creators.yml"), "--creators", "-c", show_default=True),
+    output: Path = typer.Option(Path("."), "--output", "-o", show_default=True),
+    no_browser: bool = typer.Option(False, "--no-browser"),
+    top: int = typer.Option(3, "--top", help="Top N outliers to analyze with AI", min=1, max=25),
 ) -> None:
-    """
-    Scan YouTube channels, score virality, analyze outliers with AI,
-    and generate a gallery + swipe file.
-    """
+    """Scan channels, score virality, analyze top outliers with AI."""
+    if ctx.invoked_subcommand is not None:
+        return
+
     _print_header()
 
-    # Load config
     try:
         config = load_config(profile_path=profile, creators_path=creators)
     except (FileNotFoundError, EnvironmentError, KeyError) as exc:
@@ -173,7 +238,6 @@ def main(
 
     _print_config_summary(config)
 
-    # Scan channels
     console.rule("[bold]Scanning channels[/bold]")
     console.print()
 
@@ -189,74 +253,78 @@ def main(
         console.print(f"[bold red]✗  Scan failed:[/bold red] {exc}")
         raise typer.Exit(1)
 
-    channels_scanned = len(config.creators)
     total_videos = len(all_videos)
-
     console.print(
-        f"\n✅  Scanned [bold]{channels_scanned}[/bold] channels — "
-        f"[bold]{total_videos}[/bold] videos in last "
-        f"{config.profile.months_back} months\n"
+        f"\n✅  Scanned [bold]{len(config.creators)}[/bold] channels — "
+        f"[bold]{total_videos}[/bold] videos in last {config.profile.months_back} months\n"
     )
 
     if total_videos == 0:
-        console.print("[yellow]⚠  No videos found. Check your creators.yml and date window.[/yellow]")
+        console.print("[yellow]⚠  No videos found. Check creators.yml and date window.[/yellow]")
         raise typer.Exit(0)
 
-    # Outliers
     outliers = scanner.get_outliers(all_videos)
-    console.print(
-        f"🔥  [bold]{len(outliers)}[/bold] outliers above "
-        f"{config.profile.virality_threshold}x threshold"
-    )
+    console.print(f"🔥  [bold]{len(outliers)}[/bold] outliers above {config.profile.virality_threshold}x threshold")
 
     if not outliers:
-        console.print(
-            "[yellow]⚠  No viral outliers found. Try lowering virality_threshold in profile.yml.[/yellow]"
-        )
+        console.print("[yellow]⚠  No outliers found. Try lowering virality_threshold in profile.yml.[/yellow]")
         raise typer.Exit(0)
+
+    # Save full outlier list before AI analysis
+    save_outliers(outliers, config.profile.niche)
+    console.print(f"💾  [dim]All {len(outliers)} outliers saved to outliers.json — use 'viral-ops analyze' to dig into any of them[/dim]\n")
 
     _print_outliers_table(outliers, top=top)
 
-    # AI analysis
-    console.rule("[bold]AI Analysis[/bold]")
+    _run_analysis(
+        sorted(outliers, key=lambda v: v.virality_score, reverse=True)[:top],
+        config, output, no_browser,
+    )
+
+
+# ── Analyze command ────────────────────────────────────────────────────────
+
+@app.command("analyze")
+def analyze_cmd(
+    rank: Optional[int] = typer.Option(None, "--rank", "-r", help="Rank of video from outliers.json"),
+    profile: Path = typer.Option(Path("profile.yml"), "--profile", "-p"),
+    output: Path = typer.Option(Path("."), "--output", "-o"),
+    no_browser: bool = typer.Option(False, "--no-browser"),
+    outliers_file: Path = typer.Option(OUTLIERS_FILE, "--from", help="Path to outliers.json"),
+) -> None:
+    """Analyze any saved outlier video on demand."""
+    _print_header()
 
     try:
-        analyzer = ContentAnalyzer(config)
-        results = analyzer.analyze_top(outliers, limit=top)
-    except EnvironmentError as exc:
-        console.print(f"[bold red]✗  AI config error:[/bold red] {exc}")
-        raise typer.Exit(1)
-    except Exception as exc:
-        console.print(f"[bold red]✗  Analysis failed:[/bold red] {exc}")
+        outliers, niche = load_outliers(outliers_file)
+    except FileNotFoundError as exc:
+        console.print(f"[bold red]✗[/bold red]  {exc}")
         raise typer.Exit(1)
 
-    if not results:
-        console.print("[yellow]⚠  No analysis results. Check your AI API key and try again.[/yellow]")
+    try:
+        config = load_config(profile_path=profile)
+    except (FileNotFoundError, EnvironmentError) as exc:
+        console.print(f"[bold red]✗  Config error:[/bold red] {exc}")
         raise typer.Exit(1)
 
-    # Swipe file
-    output.mkdir(parents=True, exist_ok=True)
-    swipe_path = output / "swipe_file.md"
-    console.print(f"\n📝  Saving [bold]{swipe_path}[/bold]…")
-    save_swipe_file(results, swipe_path, config.profile.niche)
+    # Show the full saved list
+    _print_outliers_table(outliers, top=len(outliers))
 
-    # Gallery
-    console.rule("[bold]Gallery[/bold]")
-    gallery_path = generate_gallery(
-        results,
-        output_dir=output,
-        profile_niche=config.profile.niche,
-        open_browser=not no_browser,
-    )
+    # Pick which one to analyze
+    if rank is None:
+        rank = IntPrompt.ask(
+            f"Which video do you want to analyze? (1–{len(outliers)})",
+            console=console,
+        )
 
-    _print_final_summary(
-        total_videos=total_videos,
-        channels_scanned=channels_scanned,
-        outlier_count=len(outliers),
-        analyzed_count=len(results),
-        gallery_path=gallery_path,
-        swipe_path=swipe_path,
-    )
+    if not 1 <= rank <= len(outliers):
+        console.print(f"[red]✗  Rank must be between 1 and {len(outliers)}[/red]")
+        raise typer.Exit(1)
+
+    video = outliers[rank - 1]
+    console.print(f"\n🎯  Analyzing: [bold]{video.title}[/bold] ({video.channel_name})\n")
+
+    _run_analysis([video], config, output, no_browser)
 
 
 if __name__ == "__main__":

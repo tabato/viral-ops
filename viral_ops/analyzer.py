@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -93,11 +94,14 @@ def _build_result(video: VideoResult, data: dict) -> AnalysisResult:
 # ------------------------------------------------------------------
 
 def _analyze_gemini(video: VideoResult, profile: Profile, api_key: str) -> Optional[AnalysisResult]:
-    import google.generativeai as genai
+    from google import genai
 
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-1.5-flash")
-    response = model.generate_content(_build_prompt(video, profile))
+    client = genai.Client(api_key=api_key)
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=_build_prompt(video, profile),
+    )
     data = _parse_json(response.text)
     return _build_result(video, data) if data else None
 
@@ -159,7 +163,7 @@ class ContentAnalyzer:
         results: list[AnalysisResult] = []
 
         provider_label = {
-            "gemini": "Gemini 1.5 Flash (free)",
+            "gemini": "Gemini 2.0 Flash (free)",
             "claude": "Claude (Anthropic)",
             "openai": "GPT-4o mini (OpenAI)",
         }.get(self.provider, self.provider)
@@ -189,6 +193,10 @@ class ContentAnalyzer:
                     console.print(f"  [red]✗[/red]  {short}: {exc}")
 
                 progress.advance(task)
+
+                # Stay within free tier rate limits (15 RPM)
+                if i < len(top) and self.provider == "gemini":
+                    time.sleep(5)
 
         return results
 
