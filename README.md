@@ -76,6 +76,7 @@ Outputs: a swipe file in Markdown and a beautiful dark-mode gallery that opens i
 ```bash
 # 1. Clone and install
 git clone https://github.com/tabato/viral-ops.git && cd viral-ops
+python3.11 -m venv .venv && source .venv/bin/activate
 pip install -e .
 
 # 2. Configure
@@ -86,6 +87,8 @@ cp templates/.env.example .env   # add your API keys
 # 3. Run
 viral-ops
 ```
+
+> **Python 3.11+ required.** Run `python3.11 --version` to confirm you have it before creating the venv. On Mac, install via [Homebrew](https://brew.sh): `brew install python@3.11`
 
 That's it. Gallery opens automatically when the run finishes.
 
