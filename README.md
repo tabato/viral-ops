@@ -217,7 +217,7 @@ Inspired by **[career-ops](https://github.com/santifer/career-ops)**.
 
 ---
 
-## 🔥 Went viral using viral-ops? [Share it.](https://github.com/tabato/viral-ops/issues/new?labels=went-viral&title=I+went+viral+using+viral-ops)
+## Went viral using viral-ops? [Share it.](https://github.com/tabato/viral-ops/issues/new?labels=went-viral&title=I+went+viral+using+viral-ops)
 
 ---
 
