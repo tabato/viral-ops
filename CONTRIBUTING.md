@@ -14,7 +14,7 @@ Thanks for wanting to help. A few quick guidelines.
 ## Getting started
 
 ```bash
-git clone https://github.com/thomasabato/viral-ops.git
+git clone https://github.com/tabato/viral-ops.git
 cd viral-ops
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e .

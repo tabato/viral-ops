@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "viral-ops"
@@ -28,5 +28,11 @@ dependencies = [
 [project.scripts]
 viral-ops = "viral_ops.__main__:app"
 
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
 [tool.setuptools.packages.find]
 include = ["viral_ops*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

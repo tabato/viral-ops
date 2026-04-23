@@ -1,3 +1,5 @@
+# viral-ops
+
 <div align="center">
 
 <br>
@@ -8,6 +10,7 @@
 
 <br>
 
+[![CI](https://github.com/tabato/viral-ops/actions/workflows/ci.yml/badge.svg)](https://github.com/tabato/viral-ops/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 [![YouTube API](https://img.shields.io/badge/YouTube-Data%20API%20v3-FF0000?style=flat-square&logo=youtube&logoColor=white)](https://developers.google.com/youtube/v3)
@@ -72,7 +75,7 @@ Outputs: a swipe file in Markdown and a beautiful dark-mode gallery that opens i
 
 ```bash
 # 1. Clone and install
-git clone https://github.com/thomasabato/viral-ops.git && cd viral-ops
+git clone https://github.com/tabato/viral-ops.git && cd viral-ops
 pip install -e .
 
 # 2. Configure
@@ -214,7 +217,7 @@ Inspired by **[career-ops](https://github.com/santifer/career-ops)**.
 
 ---
 
-## 🔥 Went viral using viral-ops? [Share it.](https://github.com/thomasabato/viral-ops/issues/new?labels=went-viral&title=I+went+viral+using+viral-ops)
+## 🔥 Went viral using viral-ops? [Share it.](https://github.com/tabato/viral-ops/issues/new?labels=went-viral&title=I+went+viral+using+viral-ops)
 
 ---
 
