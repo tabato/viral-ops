@@ -1,0 +1,70 @@
+<svg width="900" height="480" viewBox="0 0 900 480" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#161616"/>
+      <stop offset="100%" stop-color="#0f0f0f"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="480" fill="url(#bg)" rx="10"/>
+  <rect width="900" height="480" fill="none" stroke="#333" stroke-width="1" rx="10"/>
+
+  <!-- Window chrome -->
+  <rect width="900" height="36" fill="#1a1a1a" rx="10"/>
+  <rect y="20" width="900" height="16" fill="#1a1a1a"/>
+  <circle cx="20" cy="18" r="6" fill="#ff5f57"/>
+  <circle cx="40" cy="18" r="6" fill="#ffbd2e"/>
+  <circle cx="60" cy="18" r="6" fill="#28ca41"/>
+  <text x="450" y="23" text-anchor="middle" font-family="monospace" font-size="12" fill="#555">viral-ops</text>
+
+  <!-- Terminal lines -->
+  <text x="36" y="72" font-family="monospace" font-size="13" fill="#ffd700">$ viral-ops</text>
+
+  <text x="36" y="100" font-family="monospace" font-size="12" fill="#4af">╔══════════════════════════════════════════╗</text>
+  <text x="36" y="116" font-family="monospace" font-size="12" fill="#4af">║  🔥  VIRAL OPS  v0.1.0                  ║</text>
+  <text x="36" y="132" font-family="monospace" font-size="12" fill="#4af">╚══════════════════════════════════════════╝</text>
+
+  <text x="36" y="158" font-family="monospace" font-size="12" fill="#aaa">📺  Channels    5</text>
+  <text x="36" y="174" font-family="monospace" font-size="12" fill="#aaa">🤖  AI Provider Gemini 1.5 Flash (free)</text>
+  <text x="36" y="190" font-family="monospace" font-size="12" fill="#aaa">📅  Window      Last 4 months</text>
+
+  <text x="36" y="216" font-family="monospace" font-size="12" fill="#555">────────────────────────────────────────────</text>
+
+  <text x="36" y="238" font-family="monospace" font-size="12" fill="#5f5">✓</text>
+  <text x="54" y="238" font-family="monospace" font-size="12" fill="#eee">TwoMinutePapers</text>
+  <text x="280" y="238" font-family="monospace" font-size="12" fill="#555">— 48 videos</text>
+
+  <text x="36" y="256" font-family="monospace" font-size="12" fill="#5f5">✓</text>
+  <text x="54" y="256" font-family="monospace" font-size="12" fill="#eee">AndrejKarpathy</text>
+  <text x="280" y="256" font-family="monospace" font-size="12" fill="#555">— 12 videos</text>
+
+  <text x="36" y="274" font-family="monospace" font-size="12" fill="#5f5">✓</text>
+  <text x="54" y="274" font-family="monospace" font-size="12" fill="#eee">YannicKilcher</text>
+  <text x="280" y="274" font-family="monospace" font-size="12" fill="#555">— 31 videos</text>
+
+  <text x="36" y="292" font-family="monospace" font-size="12" fill="#aaa">…</text>
+
+  <!-- Outlier table -->
+  <text x="36" y="318" font-family="monospace" font-size="12" fill="#555">────────────────────────────────────────────</text>
+
+  <text x="36" y="338" font-family="monospace" font-size="12" fill="#ffd700">#1</text>
+  <text x="60" y="338" font-family="monospace" font-size="12" fill="#eee">This changes everything about AI</text>
+  <text x="600" y="338" font-family="monospace" font-size="12" fill="#ffd700">8.3x 🔥🔥🔥🔥🔥</text>
+
+  <text x="36" y="356" font-family="monospace" font-size="12" fill="#aaa">#2</text>
+  <text x="60" y="356" font-family="monospace" font-size="12" fill="#eee">I trained GPT from scratch in 24h</text>
+  <text x="600" y="356" font-family="monospace" font-size="12" fill="#ffd700">5.1x 🔥🔥🔥</text>
+
+  <text x="36" y="374" font-family="monospace" font-size="12" fill="#aaa">#3</text>
+  <text x="60" y="374" font-family="monospace" font-size="12" fill="#eee">The paper that broke the internet</text>
+  <text x="600" y="374" font-family="monospace" font-size="12" fill="#ffd700">3.7x 🔥🔥</text>
+
+  <!-- Bottom bar -->
+  <rect y="436" width="900" height="44" fill="#111" rx="0"/>
+  <rect y="436" width="900" height="1" fill="#2a2a2a"/>
+  <text x="36" y="463" font-family="monospace" font-size="12" fill="#5f5">✅  247 videos · 14 outliers · 10 analyzed · gallery opening…</text>
+
+  <!-- Watermark -->
+  <text x="864" y="463" font-family="monospace" font-size="11" fill="#333" text-anchor="end">viral-ops</text>
+</svg>
