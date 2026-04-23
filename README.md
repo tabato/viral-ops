@@ -92,6 +92,8 @@ viral-ops
 
 That's it. Gallery opens automatically when the run finishes.
 
+→ Having trouble? See the full [SETUP.md](SETUP.md) for step-by-step API key setup and troubleshooting.
+
 ---
 
 ## API setup
