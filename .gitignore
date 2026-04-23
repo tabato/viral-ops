@@ -1,0 +1,25 @@
+# Virtual environment
+.venv/
+
+# Personal config (use *.example.yml as templates)
+profile.yml
+creators.yml
+
+# API keys
+.env
+
+# Generated output
+gallery.html
+swipe_file.md
+thumbnails/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# macOS
+.DS_Store

@@ -1,0 +1,23 @@
+# ──────────────────────────────────────────────
+#  viral-ops  ·  profile.example.yml
+#  Copy to profile.yml and fill in your details
+# ──────────────────────────────────────────────
+
+# Your content niche (be specific — the more specific, the better the AI copy angles)
+niche: "AI tools and productivity for developers"
+
+# Who you're making content for
+target_audience: "Software engineers who want to leverage AI to ship faster"
+
+# Your tone and format style
+content_style: "Practical tutorials with a direct, no-fluff tone — fast-paced screen recordings with clear takeaways"
+
+# AI provider for analysis
+# Options: gemini (FREE ✨ recommended), claude, openai
+ai_provider: gemini
+
+# Videos with score above this are flagged as outliers (channel_avg * threshold)
+virality_threshold: 2.0
+
+# How many months back to scan
+months_back: 4

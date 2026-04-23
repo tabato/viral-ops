@@ -1,0 +1,15 @@
+# ──────────────────────────────────────────────
+#  viral-ops  ·  creators.example.yml
+#  Copy to creators.yml and add your own list.
+#
+#  Accepts:
+#    - @handle    (e.g. @TwoMinutePapers)
+#    - channel ID (e.g. UCX6OQ3DkcsbYNE6H8uQQuVA)
+# ──────────────────────────────────────────────
+
+creators:
+  - "@TwoMinutePapers"       # AI research breakdowns — 1.8M subs
+  - "@AndrejKarpathy"        # Deep learning from OpenAI/Tesla ex — 1.1M subs
+  - "@YannicKilcher"         # ML paper walkthroughs — 450K subs
+  - "@AIExplained-Videos"    # AI news and analysis — 600K subs
+  - "@MatthewBermanAI"       # Local AI / LLM workflows — 350K subs
