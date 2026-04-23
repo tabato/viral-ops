@@ -169,6 +169,7 @@ def _run_analysis(
     config,
     output: Path,
     no_browser: bool,
+    preview_videos: list[VideoResult] | None = None,
 ) -> None:
     console.rule("[bold]AI Analysis[/bold]")
     try:
@@ -199,6 +200,7 @@ def _run_analysis(
         output_dir=output,
         profile_niche=config.profile.niche,
         open_browser=not no_browser,
+        preview_videos=preview_videos,
     )
 
     console.print()
@@ -277,9 +279,11 @@ def main(
 
     _print_outliers_table(outliers, top=top)
 
+    ranked = sorted(outliers, key=lambda v: v.virality_score, reverse=True)
     _run_analysis(
-        sorted(outliers, key=lambda v: v.virality_score, reverse=True)[:top],
+        ranked[:top],
         config, output, no_browser,
+        preview_videos=ranked[top:top + 7],
     )
 
 
