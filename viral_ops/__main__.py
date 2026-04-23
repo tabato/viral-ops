@@ -57,6 +57,7 @@ def _video_to_dict(v: VideoResult, rank: int) -> dict:
         "description": v.description,
         "channel_avg_views": v.channel_avg_views,
         "virality_score": v.virality_score,
+        "duration_seconds": v.duration_seconds,
     }
 
 
@@ -79,6 +80,7 @@ def _dict_to_video(d: dict) -> VideoResult:
         description=d["description"],
         channel_avg_views=d["channel_avg_views"],
         virality_score=d["virality_score"],
+        duration_seconds=d.get("duration_seconds", 0),
     )
 
 
