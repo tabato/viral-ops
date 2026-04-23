@@ -263,8 +263,9 @@ def main(
         console.print("[yellow]⚠  No videos found. Check creators.yml and date window.[/yellow]")
         raise typer.Exit(0)
 
-    outliers = scanner.get_outliers(all_videos)
-    console.print(f"🔥  [bold]{len(outliers)}[/bold] outliers above {config.profile.virality_threshold}x threshold")
+    outliers = scanner.get_outliers(all_videos, content_type=config.profile.content_type)
+    type_label = {"shorts": " shorts", "longform": " longform"}.get(config.profile.content_type, "")
+    console.print(f"🔥  [bold]{len(outliers)}[/bold]{type_label} outliers above {config.profile.virality_threshold}x threshold")
 
     if not outliers:
         console.print("[yellow]⚠  No outliers found. Try lowering virality_threshold in profile.yml.[/yellow]")

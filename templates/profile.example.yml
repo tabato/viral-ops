@@ -21,3 +21,7 @@ virality_threshold: 2.0
 
 # How many months back to scan
 months_back: 4
+
+# Which content type to score and analyze
+# Options: both | longform | shorts
+content_type: both

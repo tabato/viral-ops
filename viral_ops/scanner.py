@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 from typing import Optional
@@ -34,6 +35,11 @@ class VideoResult:
     description: str
     channel_avg_views: float
     virality_score: float
+    duration_seconds: int = 0
+
+    @property
+    def is_short(self) -> bool:
+        return 0 < self.duration_seconds <= 60
 
     @property
     def video_url(self) -> str:
@@ -48,6 +54,13 @@ class VideoResult:
     def score_display(self) -> str:
         f = self.flames
         return f"{self.virality_score:.1f}x {f}".strip()
+
+
+def _parse_duration(duration: str) -> int:
+    m = re.match(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', duration or "")
+    if not m:
+        return 0
+    return int(m.group(1) or 0) * 3600 + int(m.group(2) or 0) * 60 + int(m.group(3) or 0)
 
 
 class YouTubeScanner:
@@ -177,7 +190,7 @@ class YouTubeScanner:
         for i in range(0, len(video_ids), 50):
             batch = video_ids[i : i + 50]
             resp = self.youtube.videos().list(
-                part="statistics,snippet",
+                part="statistics,snippet,contentDetails",
                 id=",".join(batch),
             ).execute()
             items.extend(resp.get("items", []))
@@ -217,6 +230,10 @@ class YouTubeScanner:
                 or ""
             )
 
+            duration_seconds = _parse_duration(
+                item.get("contentDetails", {}).get("duration", "")
+            )
+
             videos.append(
                 VideoResult(
                     video_id=item["id"],
@@ -232,6 +249,7 @@ class YouTubeScanner:
                     description=snippet.get("description", "")[:500],
                     channel_avg_views=0.0,
                     virality_score=0.0,
+                    duration_seconds=duration_seconds,
                 )
             )
 
@@ -291,5 +309,9 @@ class YouTubeScanner:
     # Outlier detection
     # ------------------------------------------------------------------
 
-    def get_outliers(self, videos: list[VideoResult]) -> list[VideoResult]:
+    def get_outliers(self, videos: list[VideoResult], content_type: str = "both") -> list[VideoResult]:
+        if content_type == "shorts":
+            videos = [v for v in videos if v.is_short]
+        elif content_type == "longform":
+            videos = [v for v in videos if not v.is_short]
         return [v for v in videos if v.virality_score >= self.virality_threshold]

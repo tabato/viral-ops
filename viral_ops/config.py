@@ -17,6 +17,7 @@ class Profile:
     ai_provider: str = "gemini"
     virality_threshold: float = 2.0
     months_back: int = 4
+    content_type: str = "both"  # longform | shorts | both
 
 
 @dataclass
@@ -57,6 +58,7 @@ def load_config(
         ai_provider=raw_profile.get("ai_provider", "gemini").lower(),
         virality_threshold=float(raw_profile.get("virality_threshold", 2.0)),
         months_back=int(raw_profile.get("months_back", 4)),
+        content_type=raw_profile.get("content_type", "both").lower(),
     )
 
     creators: list[str] = raw_creators.get("creators", [])
