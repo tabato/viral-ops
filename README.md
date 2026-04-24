@@ -256,15 +256,7 @@ Videos above `virality_threshold` (default `2.0`) are flagged as outliers.
 
 ---
 
-## Inspiration
-
-Inspired by **[career-ops](https://github.com/santifer/career-ops)**.
-
----
-
-## 🔥 Went viral using viral-ops? [Share it.](https://github.com/tabato/viral-ops/issues/new?labels=went-viral&title=I+went+viral+using+viral-ops)
-
----
+## Went viral using viral-ops? [Share it.](https://github.com/tabato/viral-ops/issues/new?labels=went-viral&title=I+went+viral+using+viral-ops)
 
 ## Let's connect
 
@@ -281,3 +273,7 @@ If you're building something, making content, or just want to talk — find me h
 ## License
 
 MIT © 2026
+
+---
+
+Inspired by **[career-ops](https://github.com/santifer/career-ops)**.
