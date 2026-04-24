@@ -313,5 +313,6 @@ class YouTubeScanner:
         if content_type == "shorts":
             videos = [v for v in videos if v.is_short]
         elif content_type == "longform":
-            videos = [v for v in videos if not v.is_short]
+            # 5-minute minimum filters out clips and short repurposes
+            videos = [v for v in videos if v.duration_seconds > 300]
         return [v for v in videos if v.virality_score >= self.virality_threshold]

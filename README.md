@@ -24,7 +24,7 @@
 
 <br>
 
-`1,200+ videos scanned` &nbsp;·&nbsp; `128 outliers found` &nbsp;·&nbsp; `30 AI copy angles` &nbsp;·&nbsp; `~60 seconds`
+`2,500+ videos scanned` &nbsp;·&nbsp; `130+ outliers found` &nbsp;·&nbsp; `30 AI copy angles` &nbsp;·&nbsp; `~30 seconds to scan`
 
 </div>
 
@@ -62,7 +62,7 @@ Outputs: a swipe file in Markdown and a beautiful dark-mode gallery that opens i
 
 | | viral-ops | Manual Research |
 |---|---|---|
-| Videos scanned | 1,200+ in ~10 seconds | Scroll for hours |
+| Videos scanned | 2,500+ in ~30 seconds | Scroll for hours |
 | Channels at once | Unlimited | One at a time |
 | Virality scoring | Automatic (math) | Eyeballed |
 | AI copy angles | ✅ Instant, niche-specific | ❌ ChatGPT separately |
