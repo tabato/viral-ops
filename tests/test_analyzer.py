@@ -1,6 +1,6 @@
 import json
 
-from viral_ops.analyzer import _parse_json
+from viral_ops.analyzer import _parse_json, _friendly_error
 
 
 def test_parse_plain_json():
@@ -41,3 +41,35 @@ def test_parse_extracts_embedded_json():
     result = _parse_json(raw)
     assert result is not None
     assert result["hook_analysis"] == "works"
+
+
+# ------------------------------------------------------------------
+# _friendly_error
+# ------------------------------------------------------------------
+
+def test_friendly_error_429():
+    exc = Exception("429 RESOURCE_EXHAUSTED quota exceeded")
+    msg = _friendly_error(exc, "Gemini")
+    assert "limit" in msg.lower()
+    assert "wait" in msg.lower()
+    assert len(msg) < 300  # no JSON blobs
+
+def test_friendly_error_resource_exhausted():
+    exc = Exception("RESOURCE_EXHAUSTED free tier")
+    msg = _friendly_error(exc, "Gemini")
+    assert "limit" in msg.lower()
+
+def test_friendly_error_503():
+    exc = Exception("503 UNAVAILABLE high demand")
+    msg = _friendly_error(exc, "Gemini")
+    assert "demand" in msg.lower() or "wait" in msg.lower()
+
+def test_friendly_error_401():
+    exc = Exception("401 invalid API key")
+    msg = _friendly_error(exc, "Claude")
+    assert "key" in msg.lower() or "rejected" in msg.lower()
+
+def test_friendly_error_generic_is_short():
+    exc = Exception("Some unexpected error " + "x" * 500)
+    msg = _friendly_error(exc, "OpenAI")
+    assert len(msg) < 300  # always truncated, never a wall of text
