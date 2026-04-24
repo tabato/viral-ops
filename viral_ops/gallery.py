@@ -33,6 +33,16 @@ def _download(url: str, dest: Path) -> bool:
         return False
 
 
+def _rank_badge(rank: int) -> str:
+    if rank == 1:
+        return '<span class="rank-badge rank-1"><span class="crown">👑</span> #1</span>'
+    if rank == 2:
+        return '<span class="rank-badge rank-2">#2</span>'
+    if rank == 3:
+        return '<span class="rank-badge rank-3">#3</span>'
+    return f'<span class="rank-badge">#{rank}</span>'
+
+
 def _preview_card_html(video: VideoResult, thumb_src: str, rank: int) -> str:
     safe_title = html.escape(video.title)
     safe_channel = html.escape(video.channel_name)
@@ -47,7 +57,7 @@ def _preview_card_html(video: VideoResult, thumb_src: str, rank: int) -> str:
 <a href="{safe_url}" target="_blank" rel="noopener" class="preview-card">
   <div class="thumb-wrap">
     {img_tag}
-    <span class="rank-badge">#{rank}</span>
+    {_rank_badge(rank)}
     <span class="virality-badge">{badge_text}</span>
   </div>
   <div class="card-body">
@@ -90,7 +100,7 @@ def _card_html(result: AnalysisResult, thumb_src: str, rank: int) -> str:
   <a href="{safe_url}" target="_blank" rel="noopener" class="thumb-link">
     <div class="thumb-wrap">
       {img_tag}
-      <span class="rank-badge">#{rank}</span>
+      {_rank_badge(rank)}
       <span class="virality-badge">{badge_text}</span>
       <div class="copy-overlay">
         <div class="copy-inner">
@@ -234,6 +244,20 @@ header {
   background: rgba(0,0,0,.72); color: var(--text2);
   font-size: .68em; font-weight: 700;
   padding: 3px 7px; border-radius: 4px; z-index: 2;
+}
+
+.rank-1 { background: #ffd700; color: #0a0a0a; box-shadow: 0 0 10px rgba(255,215,0,.5); }
+.rank-2 { background: #c0c0c0; color: #0a0a0a; }
+.rank-3 { background: #cd7f32; color: #0a0a0a; }
+
+.crown {
+  display: inline-block;
+  animation: crown-float 2s ease-in-out infinite;
+}
+
+@keyframes crown-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-3px); }
 }
 
 .virality-badge {
