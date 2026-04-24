@@ -76,7 +76,7 @@ def test_is_short_zero_duration():
 def _make_outlier_set():
     short = _make_video(10000, 1000, duration_seconds=45)   # 10x, short
     long1 = _make_video(5000, 1000, duration_seconds=600)   # 5x, longform
-    long2 = _make_video(3000, 1000, duration_seconds=120)   # 3x, longform
+    long2 = _make_video(3000, 1000, duration_seconds=360)   # 3x, longform (>5min)
     below = _make_video(1500, 1000, duration_seconds=300)   # 1.5x, below threshold
     return [short, long1, long2, below]
 
