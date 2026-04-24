@@ -1,6 +1,6 @@
 # Gemini Setup — FREE ✨ (Recommended)
 
-Gemini 1.5 Flash is the default AI provider for viral-ops and it's **completely free**.
+Gemini is the default AI provider for viral-ops and it's **completely free**.
 
 No billing required. No credit card. Just a Google account.
 
@@ -12,7 +12,7 @@ No billing required. No credit card. Just a Google account.
 | Tokens per day | 1,000,000 |
 | Cost | $0 |
 
-A full viral-ops run (10 videos analyzed) uses roughly 15,000–20,000 tokens. You could run it 50+ times a day on the free tier.
+A full viral-ops run (3 videos analyzed) uses roughly 5,000–8,000 tokens. You have plenty of room.
 
 ## Setup
 
@@ -38,16 +38,18 @@ GEMINI_API_KEY=your_key_here
 ai_provider: gemini
 ```
 
-That's it. No billing setup, no quotas to worry about.
+That's it. No billing setup, no credit card.
 
 ## Model
 
-viral-ops uses `gemini-2.0-flash` — Google's latest fast model, optimized for high-volume tasks. It's accurate, quick, and handles the JSON-structured analysis prompts reliably.
+viral-ops uses `gemini-2.5-flash` — Google's latest fast model. It's accurate, cheap, and handles the analysis prompts reliably.
 
 ## Troubleshooting
 
-**`GEMINI_API_KEY not set`** — check your `.env` file is in the project root and you've run `source .venv/bin/activate` before running `viral-ops`.
+**`GEMINI_API_KEY not set`** — your `.env` file is either missing or not in the project root folder. Make sure you ran `cp templates/.env.example .env` and filled in your key.
 
-**`429 Resource exhausted`** — you've hit the 15 RPM limit. This shouldn't happen with viral-ops (10 sequential calls), but if it does, wait 60 seconds and retry.
+**Rate limit hit** — Gemini's free tier allows 15 requests per minute. If you see a rate limit error, wait a minute and try again. viral-ops adds a small delay between calls automatically to reduce this.
 
-**`Invalid API key`** — regenerate the key at AI Studio and update `.env`.
+**High demand / 503 error** — Google's servers are busy. This is temporary. Wait 60 seconds and run again.
+
+**`Invalid API key`** — go back to [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey), create a new key, and update your `.env`.

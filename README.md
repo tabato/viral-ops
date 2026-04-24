@@ -113,6 +113,12 @@ Uses `claude-sonnet-4-6` · ~$0.50 per full run.
 
 → Full setup guide: [CLAUDE.md](CLAUDE.md)
 
+### OpenAI
+
+Paid API. Uses `gpt-4o-mini` · under $0.01 per full run.
+
+→ Full setup guide: [OPENAI.md](OPENAI.md)
+
 ---
 
 ## YouTube API key
@@ -152,7 +158,12 @@ ai_provider: gemini
 virality_threshold: 2.0   # flag videos that outperform channel avg by this multiple
 months_back: 4            # how far back to scan
 
-# longform | shorts | both
+# Which videos to include:
+#   both     — everything (default)
+#   longform — videos over 5 minutes only. Filters out Shorts AND short clips
+#              (1–4 min repurposes). Keeps only true long-form content where
+#              the full 16:9 thumbnail format makes sense.
+#   shorts   — only YouTube Shorts (60 seconds or under)
 content_type: both
 ```
 
@@ -178,9 +189,9 @@ Mix handles (`@handle`) and channel IDs freely.
 | File | What's in it |
 |---|---|
 | `gallery.html` | Dark-mode grid — thumbnails, virality badges, copy angle preview on hover, full analysis on expand. Auto-opens in browser. |
-| `swipe_file.md` | Full analysis per outlier: hook breakdown, why it went viral, 3 copy angles for your niche. |
-| `outliers.json` | All ranked outliers from the scan — used by `viral-ops analyze`. |
-| `thumbnails/` | Downloaded thumbnail images. |
+| `swipe_file.md` | Full written analysis for each video: hook breakdown, why it went viral, and 3 copy angles tailored to your niche. Your content cheat sheet. |
+| `outliers.json` | Every ranked outlier from the scan saved locally — used by `viral-ops analyze` so you never have to rescan. |
+| `thumbnails/` | Downloaded thumbnail images used by gallery.html. |
 
 ---
 

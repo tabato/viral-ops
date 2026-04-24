@@ -90,6 +90,27 @@ def _build_result(video: VideoResult, data: dict) -> AnalysisResult:
 
 
 # ------------------------------------------------------------------
+# Error helpers
+# ------------------------------------------------------------------
+
+def _friendly_error(exc: Exception, provider: str) -> str:
+    msg = str(exc)
+    if "429" in msg or "RESOURCE_EXHAUSTED" in msg:
+        return (
+            f"{provider} has hit its daily or per-minute limit. "
+            "Wait a few minutes and try again — or switch to a different "
+            "ai_provider in profile.yml (gemini, claude, or openai)."
+        )
+    if "503" in msg or "UNAVAILABLE" in msg:
+        return f"{provider} is under high demand right now. Wait 60 seconds and run again."
+    if "401" in msg or "403" in msg or "invalid" in msg.lower():
+        return f"Your {provider} API key was rejected. Double-check the key in your .env file."
+    # Trim the raw message so it doesn't dump a wall of JSON
+    short = msg[:180].split("\n")[0]
+    return f"{provider} error — {short}"
+
+
+# ------------------------------------------------------------------
 # Provider implementations
 # ------------------------------------------------------------------
 
@@ -190,7 +211,7 @@ class ContentAnalyzer:
                     else:
                         console.print(f"  [yellow]⚠[/yellow]  Couldn't parse response: {short}")
                 except Exception as exc:
-                    console.print(f"  [red]✗[/red]  {short}: {exc}")
+                    console.print(f"  [red]✗[/red]  {short}: {_friendly_error(exc, self.provider)}")
 
                 progress.advance(task)
 

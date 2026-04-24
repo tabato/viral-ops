@@ -38,11 +38,21 @@ def load_config(
 
     if not profile_path.exists():
         raise FileNotFoundError(
-            f"'{profile_path}' not found. Copy profile.example.yml → profile.yml and fill it in."
+            f"Can't find '{profile_path}'.\n\n"
+            "  Run this to create it:\n"
+            "    cp templates/profile.example.yml profile.yml\n\n"
+            "  Then open profile.yml and fill in your niche, audience, and content style."
         )
     if not creators_path.exists():
         raise FileNotFoundError(
-            f"'{creators_path}' not found. Copy creators.example.yml → creators.yml and fill it in."
+            f"Can't find '{creators_path}'.\n\n"
+            "  Run this to create it:\n"
+            "    cp templates/creators.example.yml creators.yml\n\n"
+            "  Then open creators.yml and add the YouTube channels you want to scan.\n"
+            "  Example:\n"
+            "    creators:\n"
+            '      - "@AlexHormozi"\n'
+            '      - "@danmartell"'
         )
 
     with open(profile_path) as f:
@@ -62,6 +72,17 @@ def load_config(
     )
 
     creators: list[str] = raw_creators.get("creators", [])
+
+    if not creators:
+        raise ValueError(
+            "Your creators.yml has no channels in it!\n\n"
+            "  Open creators.yml and add at least one YouTube channel, like this:\n\n"
+            "    creators:\n"
+            '      - "@AlexHormozi"\n'
+            '      - "@danmartell"\n\n'
+            "  You can use a channel handle (starts with @) or a channel ID.\n"
+            "  Not sure which channels to add? Check templates/creators.example.yml for ideas."
+        )
 
     youtube_api_key = os.environ.get("YOUTUBE_API_KEY", "")
     if not youtube_api_key:

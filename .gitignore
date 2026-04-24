@@ -8,6 +8,9 @@ creators.yml
 # API keys
 .env
 
+# Local scripts (personal/marketing tools, not part of the public repo)
+scripts/
+
 # Generated output
 gallery.html
 swipe_file.md
