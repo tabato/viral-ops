@@ -8,8 +8,10 @@ creators.yml
 # API keys
 .env
 
-# Local scripts (personal/marketing tools, not part of the public repo)
+# Local scripts and demo tools (personal/marketing, not part of the public repo)
 scripts/
+demo_run.py
+demo.tape
 
 # Generated output
 gallery.html

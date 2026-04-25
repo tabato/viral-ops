@@ -52,6 +52,12 @@ Outputs: a swipe file in Markdown and a beautiful dark-mode gallery that opens i
 
 ## Demo
 
+![viral-ops CLI demo](assets/demo.gif)
+
+<br>
+
+**The gallery it generates:**
+
 ![viral-ops gallery](assets/curatedGallerySS.png)
 
 > *Hover any thumbnail for copy angle previews. Click to watch on YouTube. Expand Analysis for the full breakdown.*
