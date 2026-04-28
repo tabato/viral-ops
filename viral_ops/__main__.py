@@ -16,7 +16,7 @@ from rich.table import Table
 from . import __version__
 from .analyzer import ContentAnalyzer, AnalysisResult, save_swipe_file
 from .config import load_config
-from .gallery import generate_gallery
+from .gallery import generate_gallery, _fmt_views
 from .scanner import YouTubeScanner, VideoResult
 
 console = Console()
@@ -132,13 +132,6 @@ def _print_config_summary(config) -> None:
     console.print(f"📺  [bold]Channels[/bold]    {len(config.creators)}")
     console.print()
 
-
-def _fmt_views(n: int) -> str:
-    if n >= 1_000_000:
-        return f"{n/1_000_000:.1f}M"
-    if n >= 1_000:
-        return f"{n/1_000:.0f}K"
-    return str(n)
 
 
 def _print_outliers_table(outliers: list[VideoResult], top: int = 10) -> None:
