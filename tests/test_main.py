@@ -1,10 +1,14 @@
 from datetime import datetime, timezone
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
+from typer.testing import CliRunner
 
-from viral_ops.__main__ import save_outliers, load_outliers
+from viral_ops.__main__ import app, save_outliers, load_outliers
 from viral_ops.scanner import VideoResult
+
+runner = CliRunner()
 
 
 def _make_video(video_id: str = "abc123", virality_score: float = 3.0) -> VideoResult:
@@ -67,3 +71,53 @@ def test_load_preserves_fields(tmp_path):
 def test_load_missing_file_raises(tmp_path):
     with pytest.raises(FileNotFoundError):
         load_outliers(tmp_path / "nonexistent.json")
+
+
+# ------------------------------------------------------------------
+# viral-ops list
+# ------------------------------------------------------------------
+
+def _write_config(tmp_path: Path) -> tuple[Path, Path]:
+    profile = tmp_path / "profile.yml"
+    creators = tmp_path / "creators.yml"
+    profile.write_text(
+        "niche: test niche\n"
+        "target_audience: test audience\n"
+        "content_style: test style\n"
+        "ai_provider: gemini\n"
+    )
+    creators.write_text("creators:\n  - '@AlexHormozi'\n  - '@danmartell'\n")
+    return profile, creators
+
+
+def test_list_shows_creators(tmp_path):
+    profile, creators = _write_config(tmp_path)
+    with patch.dict("os.environ", {"YOUTUBE_API_KEY": "fake", "GEMINI_API_KEY": "fake"}):
+        result = runner.invoke(app, ["list", "--profile", str(profile), "--creators", str(creators)])
+    assert result.exit_code == 0
+    assert "@AlexHormozi" in result.output
+    assert "@danmartell" in result.output
+
+
+def test_list_shows_niche(tmp_path):
+    profile, creators = _write_config(tmp_path)
+    with patch.dict("os.environ", {"YOUTUBE_API_KEY": "fake", "GEMINI_API_KEY": "fake"}):
+        result = runner.invoke(app, ["list", "--profile", str(profile), "--creators", str(creators)])
+    assert result.exit_code == 0
+    assert "test niche" in result.output
+
+
+def test_list_missing_profile_exits_nonzero(tmp_path):
+    _, creators = _write_config(tmp_path)
+    with patch.dict("os.environ", {"YOUTUBE_API_KEY": "fake"}):
+        result = runner.invoke(app, ["list", "--profile", str(tmp_path / "nope.yml"), "--creators", str(creators)])
+    assert result.exit_code != 0
+
+
+def test_list_makes_no_api_calls(tmp_path):
+    profile, creators = _write_config(tmp_path)
+    with patch.dict("os.environ", {"YOUTUBE_API_KEY": "fake", "GEMINI_API_KEY": "fake"}):
+        with patch("viral_ops.__main__.YouTubeScanner") as mock_scanner:
+            result = runner.invoke(app, ["list", "--profile", str(profile), "--creators", str(creators)])
+    mock_scanner.assert_not_called()
+    assert result.exit_code == 0

@@ -327,5 +327,35 @@ def analyze_cmd(
     _run_analysis([video], config, output, no_browser)
 
 
+# ── List command ──────────────────────────────────────────────────
+
+@app.command("list")
+def list_cmd(
+    profile: Path = typer.Option(Path("profile.yml"), "--profile", "-p"),
+    creators: Path = typer.Option(Path("creators.yml"), "--creators", "-c"),
+) -> None:
+    """Show current config and creator list without hitting any APIs."""
+    _print_header()
+
+    try:
+        config = load_config(profile_path=profile, creators_path=creators)
+    except (FileNotFoundError, EnvironmentError, KeyError) as exc:
+        console.print(f"[bold red]✗  Config error:[/bold red] {exc}")
+        raise typer.Exit(1)
+
+    _print_config_summary(config)
+
+    console.rule("[bold]Creators[/bold]")
+    console.print()
+    for i, creator in enumerate(config.creators, 1):
+        console.print(f"  {i:2}. [cyan]{creator}[/cyan]")
+    console.print()
+    console.print(
+        f"[dim]Run [bold]viral-ops[/bold] to scan these "
+        f"{len(config.creators)} channel{'s' if len(config.creators) != 1 else ''}.[/dim]"
+    )
+    console.print()
+
+
 if __name__ == "__main__":
     app()
