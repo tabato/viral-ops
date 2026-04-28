@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from viral_ops.scanner import VideoResult, _parse_duration, YouTubeScanner
+from viral_ops.scanner import VideoResult, _parse_duration, _compute_virality_scores, YouTubeScanner
 
 
 def _make_video(view_count: int, channel_avg: float, duration_seconds: int = 300) -> VideoResult:
@@ -140,3 +140,80 @@ def test_video_url():
 def test_score_display_includes_score():
     v = _make_video(1500, 500)  # 3.0x
     assert "3.0x" in v.score_display
+
+
+# ------------------------------------------------------------------
+# _compute_virality_scores
+# ------------------------------------------------------------------
+
+def _make_raw_video(view_count: int, duration_seconds: int) -> VideoResult:
+    """Build a VideoResult with zeroed scores (as fetch_channel_videos would before scoring)."""
+    return VideoResult(
+        video_id="x",
+        title="T",
+        channel_id="UC0",
+        channel_name="C",
+        channel_handle="@c",
+        published_at=datetime.now(timezone.utc),
+        view_count=view_count,
+        like_count=0,
+        comment_count=0,
+        thumbnail_url="",
+        description="",
+        channel_avg_views=0.0,
+        virality_score=0.0,
+        duration_seconds=duration_seconds,
+    )
+
+
+def test_compute_scores_separates_shorts_and_longform():
+    # 2 longform: 1000 and 3000 views → avg 2000
+    # 2 shorts:    500 and 1500 views → avg 1000
+    long1 = _make_raw_video(1000, 600)
+    long2 = _make_raw_video(3000, 600)
+    short1 = _make_raw_video(500, 30)
+    short2 = _make_raw_video(1500, 30)
+
+    _compute_virality_scores([long1, long2, short1, short2])
+
+    assert long1.channel_avg_views == pytest.approx(2000)
+    assert long2.channel_avg_views == pytest.approx(2000)
+    assert short1.channel_avg_views == pytest.approx(1000)
+    assert short2.channel_avg_views == pytest.approx(1000)
+
+    assert long1.virality_score == pytest.approx(0.5)
+    assert long2.virality_score == pytest.approx(1.5)
+    assert short1.virality_score == pytest.approx(0.5)
+    assert short2.virality_score == pytest.approx(1.5)
+
+
+def test_compute_scores_longform_only_uses_overall():
+    # No shorts → longform videos get the overall average
+    v1 = _make_raw_video(1000, 600)
+    v2 = _make_raw_video(3000, 600)
+
+    _compute_virality_scores([v1, v2])
+
+    assert v1.channel_avg_views == pytest.approx(2000)
+    assert v1.virality_score == pytest.approx(0.5)
+    assert v2.virality_score == pytest.approx(1.5)
+
+
+def test_compute_scores_shorts_only_uses_overall():
+    s1 = _make_raw_video(200, 30)
+    s2 = _make_raw_video(600, 30)
+
+    _compute_virality_scores([s1, s2])
+
+    assert s1.channel_avg_views == pytest.approx(400)
+    assert s1.virality_score == pytest.approx(0.5)
+
+
+def test_compute_scores_unknown_duration_uses_overall():
+    long = _make_raw_video(1000, 600)
+    unknown = _make_raw_video(3000, 0)   # duration not available
+
+    _compute_virality_scores([long, unknown])
+
+    overall_avg = (1000 + 3000) / 2
+    assert unknown.channel_avg_views == pytest.approx(overall_avg)

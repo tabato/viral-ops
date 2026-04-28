@@ -63,6 +63,32 @@ def _parse_duration(duration: str) -> int:
     return int(m.group(1) or 0) * 3600 + int(m.group(2) or 0) * 60 + int(m.group(3) or 0)
 
 
+def _compute_virality_scores(videos: list[VideoResult]) -> None:
+    """Score each video against the average for its own content type.
+
+    Shorts and longform compete on separate curves so a channel's posting
+    mix doesn't distort scores when the user filters by content type.
+    Videos with unknown duration (0) fall back to the overall average.
+    """
+    shorts = [v for v in videos if v.is_short]
+    longform = [v for v in videos if not v.is_short and v.duration_seconds > 0]
+    unknown = [v for v in videos if v.duration_seconds == 0]
+
+    shorts_avg = sum(v.view_count for v in shorts) / len(shorts) if shorts else None
+    longform_avg = sum(v.view_count for v in longform) / len(longform) if longform else None
+    overall_avg = sum(v.view_count for v in videos) / len(videos)
+
+    for v in videos:
+        if v.is_short and shorts_avg is not None:
+            avg = shorts_avg
+        elif not v.is_short and v.duration_seconds > 0 and longform_avg is not None:
+            avg = longform_avg
+        else:
+            avg = overall_avg
+        v.channel_avg_views = avg
+        v.virality_score = (v.view_count / avg) if avg > 0 else 0.0
+
+
 class YouTubeScanner:
     def __init__(
         self,
@@ -254,10 +280,7 @@ class YouTubeScanner:
             )
 
         if videos:
-            avg = sum(v.view_count for v in videos) / len(videos)
-            for v in videos:
-                v.channel_avg_views = avg
-                v.virality_score = (v.view_count / avg) if avg > 0 else 0.0
+            _compute_virality_scores(videos)
 
         return videos
 
