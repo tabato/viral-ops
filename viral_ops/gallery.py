@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 import webbrowser
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -31,6 +32,31 @@ def _download(url: str, dest: Path) -> bool:
         return True
     except Exception:
         return False
+
+
+def _download_thumbnails(
+    items: list[tuple[str, str, Path, str]],
+    thumbs_dir: Path,
+) -> dict[str, str]:
+    """Download thumbnails concurrently. items = [(video_id, url, dest, title)]."""
+
+    def _fetch(video_id: str, url: str, dest: Path, title: str):
+        return video_id, _download(url, dest), title
+
+    thumb_map: dict[str, str] = {}
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        futures = {
+            pool.submit(_fetch, vid_id, url, dest, title): vid_id
+            for vid_id, url, dest, title in items
+        }
+        for future in as_completed(futures):
+            video_id, ok, title = future.result()
+            if ok:
+                thumb_map[video_id] = f"thumbnails/{video_id}.jpg"
+                console.print(f"  [dim]↓  {title[:60]}[/dim]")
+            else:
+                console.print(f"  [yellow]⚠[/yellow]  Failed: {title[:40]}")
+    return thumb_map
 
 
 def _rank_badge(rank: int) -> str:
@@ -408,25 +434,17 @@ def generate_gallery(
     thumbs_dir.mkdir(parents=True, exist_ok=True)
 
     console.print("\n🖼️   [bold]Downloading thumbnails…[/bold]")
-    thumb_map: dict[str, str] = {}
+
+    items: list[tuple[str, str, Path, str]] = []
     for r in results:
         v = r.video
-        if not v.thumbnail_url:
-            continue
-        dest = thumbs_dir / f"{v.video_id}.jpg"
-        if _download(v.thumbnail_url, dest):
-            thumb_map[v.video_id] = f"thumbnails/{v.video_id}.jpg"
-            console.print(f"  [dim]↓  {v.title[:60]}[/dim]")
-        else:
-            console.print(f"  [yellow]⚠[/yellow]  Failed: {v.title[:40]}")
-
-    # Download preview thumbnails too
+        if v.thumbnail_url:
+            items.append((v.video_id, v.thumbnail_url, thumbs_dir / f"{v.video_id}.jpg", v.title))
     for v in (preview_videos or []):
-        if not v.thumbnail_url or v.video_id in thumb_map:
-            continue
-        dest = thumbs_dir / f"{v.video_id}.jpg"
-        if _download(v.thumbnail_url, dest):
-            thumb_map[v.video_id] = f"thumbnails/{v.video_id}.jpg"
+        if v.thumbnail_url and not any(vid_id == v.video_id for vid_id, *_ in items):
+            items.append((v.video_id, v.thumbnail_url, thumbs_dir / f"{v.video_id}.jpg", v.title))
+
+    thumb_map = _download_thumbnails(items, thumbs_dir)
 
     console.print("🌐  [bold]Generating gallery.html…[/bold]")
 
