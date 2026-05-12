@@ -185,7 +185,7 @@ class ContentAnalyzer:
         results: list[AnalysisResult] = []
 
         provider_label = {
-            "gemini": "Gemini 2.0 Flash (free)",
+            "gemini": "Gemini 2.5 Flash (free)",
             "claude": "Claude (Anthropic)",
             "openai": "GPT-4o mini (OpenAI)",
         }.get(self.provider, self.provider)

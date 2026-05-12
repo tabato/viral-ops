@@ -31,7 +31,7 @@ app = typer.Typer(
 )
 
 PROVIDER_LABELS = {
-    "gemini": "Gemini 2.0 Flash  [dim](FREE — recommended)[/dim]",
+    "gemini": "Gemini 2.5 Flash  [dim](FREE — recommended)[/dim]",
     "claude": "Claude (Anthropic)",
     "openai": "GPT-4o mini (OpenAI)",
 }
