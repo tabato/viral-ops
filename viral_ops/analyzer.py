@@ -36,7 +36,7 @@ VIRAL VIDEO:
 - Channel: {video.channel_name}
 - Views: {video.view_count:,}
 - Virality Score: {video.virality_score:.2f}x above this channel's average
-- Description excerpt: {video.description[:400]}
+- Description excerpt: {video.description}
 
 CREATOR PROFILE:
 - Niche: {profile.niche}

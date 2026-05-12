@@ -272,7 +272,7 @@ class YouTubeScanner:
                     like_count=int(stats.get("likeCount", 0)),
                     comment_count=int(stats.get("commentCount", 0)),
                     thumbnail_url=thumbnail_url,
-                    description=snippet.get("description", "")[:500],
+                    description=snippet.get("description", "")[:400],
                     channel_avg_views=0.0,
                     virality_score=0.0,
                     duration_seconds=duration_seconds,
