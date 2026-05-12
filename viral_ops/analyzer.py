@@ -64,6 +64,7 @@ def _parse_json(text: str) -> Optional[dict]:
     for fence in ("```json", "```"):
         if text.startswith(fence):
             text = text[len(fence):]
+            break
     if text.endswith("```"):
         text = text[:-3]
     try:
