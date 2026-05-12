@@ -181,7 +181,7 @@ class ContentAnalyzer:
             raise ValueError(f"Unknown ai_provider: '{self.provider}'. Use gemini, claude, or openai.")
 
     def analyze_top(self, outliers: list[VideoResult], limit: int = 10) -> list[AnalysisResult]:
-        top = sorted(outliers, key=lambda v: v.virality_score, reverse=True)[:limit]
+        top = outliers[:limit]
         results: list[AnalysisResult] = []
 
         provider_label = {

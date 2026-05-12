@@ -135,7 +135,7 @@ def _print_config_summary(config) -> None:
 
 
 def _print_outliers_table(outliers: list[VideoResult], top: int = 10) -> None:
-    ranked = sorted(outliers, key=lambda v: v.virality_score, reverse=True)[:top]
+    ranked = outliers[:top]
     table = Table(
         title=f"🔥  Top {len(ranked)} Viral Outliers",
         box=box.ROUNDED,
